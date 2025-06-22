@@ -1,4 +1,5 @@
 const Profile = require('../models/Profile');
+const User = require('../models/User');
 
 exports.saveProfile = async (req, res) => {
   try {
@@ -57,14 +58,19 @@ exports.getProfileById = async (req, res) => {
 exports.searchPlayers = async (req, res) => {
   try {
     const q = req.query.q;
+
+    // Hľadáme v profile.name
     const matches = await Profile.find({
       name: { $regex: q, $options: 'i' }
-    }).limit(5);
+    }).select('userId name club photoUrl').limit(5);
+
     res.json(matches);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
+
 
 exports.addReview = async (req, res) => {
   try {
@@ -77,12 +83,21 @@ exports.addReview = async (req, res) => {
     if (reviewerProfile.club !== targetProfile.club)
       return res.status(403).json({ msg: 'Only players from the same club can review' });
 
+    if (!req.body.text || req.body.text.trim() === '') {
+      return res.status(400).json({ msg: 'Review text is required' });
+    }
+
     const review = {
       reviewerId: req.user.id,
       reviewerName: reviewerProfile.name,
-      text: req.body.text,  // <- TOTO JE DÔLEŽITÉ
+      text: req.body.text.trim(),
       date: new Date()
     };
+
+    // ✅ Ochrana pred zlým typom
+    if (!Array.isArray(targetProfile.reviews)) {
+      targetProfile.reviews = [];
+    }
 
     targetProfile.reviews.push(review);
     await targetProfile.save();
@@ -93,6 +108,7 @@ exports.addReview = async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 };
+
 
 exports.deleteReview = async (req, res) => {
   try {

@@ -14,7 +14,7 @@ function Navbar() {
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:5000/api/profile/search?name=${query}`, {
+        const res = await fetch(`http://localhost:5000/api/profile/search?q=${query}`, {
           headers: { Authorization: token }
         });
         const data = await res.json();

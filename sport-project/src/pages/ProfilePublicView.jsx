@@ -51,7 +51,7 @@ function ProfilePublicView() {
           'Content-Type': 'application/json',
           Authorization: token
         },
-        body: JSON.stringify({ comment: reviewText }) // opravené: 'comment' namiesto 'text'
+        body: JSON.stringify({ text: reviewText })
       });
 
       if (!res.ok) throw new Error('Failed to post review');
@@ -151,7 +151,7 @@ function ProfilePublicView() {
           <ul style={{ paddingLeft: '1rem' }}>
             {profile.reviews.map((r, i) => (
               <li key={i} style={{ marginBottom: '0.75rem' }}>
-                <strong>{r.reviewerName}</strong>: {r.comment}
+                <strong>{r.reviewerName}</strong>: {r.text}
               </li>
             ))}
           </ul>

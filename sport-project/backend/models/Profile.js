@@ -38,7 +38,7 @@ reviews: [
   {
     reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     reviewerName: String,
-    text: String,  // ✅ správne pole
+    text: String,
     date: { type: Date, default: Date.now }
   }
 ]
