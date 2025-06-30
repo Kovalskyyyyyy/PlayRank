@@ -1,25 +1,31 @@
 const Profile = require('../models/Profile');
 const User = require('../models/User');
 
+// Uloženie alebo aktualizácia profilu
 exports.saveProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const data = req.body;
 
-    // Fotka
     let photoUrl = '';
     if (req.file) {
       photoUrl = `/uploads/${req.file.filename}`;
     }
 
+    // parsuj polia
     const career = data.career ? JSON.parse(data.career) : [];
+    const injuries = data.injuries ? JSON.parse(data.injuries) : [];
 
+    // vytvor dáta
     const profileData = {
       ...data,
       userId,
       photoUrl: photoUrl || data.photoUrl,
       career,
+      injuries,
     };
+
+    delete profileData.reviews; // nech sa nerešia recenzie tu
 
     const existing = await Profile.findOne({ userId });
     if (existing) {
@@ -35,6 +41,9 @@ exports.saveProfile = async (req, res) => {
   }
 };
 
+
+
+// Získaj vlastný profil
 exports.getProfile = async (req, res) => {
   try {
     const profile = await Profile.findOne({ userId: req.user.id });
@@ -45,6 +54,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+// Získaj verejný profil podľa userId
 exports.getProfileById = async (req, res) => {
   try {
     const profile = await Profile.findOne({ userId: req.params.id });
@@ -55,23 +65,20 @@ exports.getProfileById = async (req, res) => {
   }
 };
 
+// Vyhľadávanie hráčov podľa mena (z profilu)
 exports.searchPlayers = async (req, res) => {
   try {
     const q = req.query.q;
-
-    // Hľadáme v profile.name
     const matches = await Profile.find({
       name: { $regex: q, $options: 'i' }
     }).select('userId name club photoUrl').limit(5);
-
     res.json(matches);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
 
-
+// Pridanie recenzie
 exports.addReview = async (req, res) => {
   try {
     const reviewerProfile = await Profile.findOne({ userId: req.user.id });
@@ -83,18 +90,23 @@ exports.addReview = async (req, res) => {
     if (reviewerProfile.club !== targetProfile.club)
       return res.status(403).json({ msg: 'Only players from the same club can review' });
 
-    if (!req.body.text || req.body.text.trim() === '') {
+const reviewText = req.body.text;
+
+if (!reviewText || typeof reviewText !== 'string' || reviewText.trim() === '') {
+  return res.status(400).json({ msg: 'Review text is required' });
+}
+
+    if (!reviewText || reviewText.trim() === '') {
       return res.status(400).json({ msg: 'Review text is required' });
     }
 
     const review = {
       reviewerId: req.user.id,
       reviewerName: reviewerProfile.name,
-      text: req.body.text.trim(),
+      text: reviewText.trim(),
       date: new Date()
     };
 
-    // ✅ Ochrana pred zlým typom
     if (!Array.isArray(targetProfile.reviews)) {
       targetProfile.reviews = [];
     }
@@ -109,7 +121,7 @@ exports.addReview = async (req, res) => {
   }
 };
 
-
+// Zmazanie recenzie
 exports.deleteReview = async (req, res) => {
   try {
     const profile = await Profile.findOne({ userId: req.params.id });
@@ -128,4 +140,3 @@ exports.deleteReview = async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 };
-

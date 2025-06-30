@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 function ProfilePublicView() {
   const { id } = useParams();
-  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviewText, setReviewText] = useState('');
   const [canReview, setCanReview] = useState(false);
@@ -26,7 +23,7 @@ function ProfilePublicView() {
           headers: { Authorization: token }
         });
         const data2 = await res2.json();
-        setCurrentUser(data2);
+
 
         if (data1.club && data2.club && data1.club === data2.club && data2.userId !== id) {
           setCanReview(true);

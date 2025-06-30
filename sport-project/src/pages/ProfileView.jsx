@@ -126,7 +126,7 @@ function ProfileView() {
     profile.reviews.map((review, idx) => (
       <div key={idx} style={{ borderBottom: '1px solid #ccc', padding: '0.5rem 0' }}>
         <strong>{review.reviewerName}</strong>
-        <p>{review.content}</p>
+        <p>{review.text}</p>
       </div>
     ))
   ) : (
