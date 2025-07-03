@@ -15,6 +15,7 @@ exports.saveProfile = async (req, res) => {
     // parsuj polia
     const career = data.career ? JSON.parse(data.career) : [];
     const injuries = data.injuries ? JSON.parse(data.injuries) : [];
+    const matchesData = data.matchesData ? JSON.parse(data.matchesData) : [];
 
     // vytvor dáta
     const profileData = {
@@ -23,6 +24,7 @@ exports.saveProfile = async (req, res) => {
       photoUrl: photoUrl || data.photoUrl,
       career,
       injuries,
+      matchesData
     };
 
     delete profileData.reviews; // nech sa nerešia recenzie tu
@@ -40,8 +42,6 @@ exports.saveProfile = async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 };
-
-
 
 // Získaj vlastný profil
 exports.getProfile = async (req, res) => {
@@ -90,13 +90,9 @@ exports.addReview = async (req, res) => {
     if (reviewerProfile.club !== targetProfile.club)
       return res.status(403).json({ msg: 'Only players from the same club can review' });
 
-const reviewText = req.body.text;
+    const reviewText = req.body.text;
 
-if (!reviewText || typeof reviewText !== 'string' || reviewText.trim() === '') {
-  return res.status(400).json({ msg: 'Review text is required' });
-}
-
-    if (!reviewText || reviewText.trim() === '') {
+    if (!reviewText || typeof reviewText !== 'string' || reviewText.trim() === '') {
       return res.status(400).json({ msg: 'Review text is required' });
     }
 
